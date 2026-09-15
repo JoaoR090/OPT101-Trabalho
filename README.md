@@ -1,6 +1,6 @@
 # OPT101 — Arduino
 
-Trabalho desenvolvido para a disciplina **Tópicos Especiais em Interfaces Computacionais**, utilizando **Arduino** e o sensor de luz **OPT101**.
+Trabalho desenvolvido para a disciplina **Tópicos Especiais em Interfaces Computacionais**, utilizando **Arduino**.
 
 ## 📚 Disciplina
 
