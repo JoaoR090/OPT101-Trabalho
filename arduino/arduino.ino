@@ -141,9 +141,6 @@ void envia(byte* pacote, int tamanho, byte destino, byte controle){
 
 // Envia um pacote de ack para o destino determinado
 void envia_ack(byte destino){
-  radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-  delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
-
   byte resposta_ACK[3];// Vetor de bytes representando a resposta ACK
 
   config_payload(resposta_ACK, destino, ACK);// Configuramos os bits de controle da resposta
@@ -160,9 +157,6 @@ void envia_ack(byte destino){
 
   Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
-
-  radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
-  delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
 };
 
 // Recebe um pacote de dados de um determinado tamanho e envia um ack
