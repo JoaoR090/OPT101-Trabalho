@@ -7,7 +7,7 @@
 #define CSN_PIN 8
 #define DATA 0
 #define ACK 1
-#define TIMEOUT 100000
+#define ACK_TIMEOUT_MS 100
 #define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -25,24 +25,22 @@ void setup() {
   // initialize the transceiver on the SPI bus
   if (!radio.begin()) {
     Serial.println(F("radio hardware is not responding!!"));
-    while (1) {}  // hold in infinite loop
+    while (1) {}// hold in infinite loop
   }
 
   // because these examples are likely run with nodes in close proximity to
   // each other.
-  radio.setPALevel(RF24_PA_MAX);  // RF24_PA_MAX is default.
+  radio.setPALevel(RF24_PA_MAX);// RF24_PA_MAX is default.
   radio.setChannel(100);
-  // save on transmission time by setting the radio to only transmit the
-  // number of bytes we need to transmit a float
-  radio.setPayloadSize(5);  // float datatype occupies 4 bytes
+  radio.setPayloadSize(5);
   radio.setAutoAck(false);
   radio.setCRCLength(RF24_CRC_DISABLED);
   radio.setDataRate(RF24_250KBPS);
   // set the TX address of the RX node into the TX pipe
-  radio.openWritingPipe(address[0]);  // always uses pipe 0
+  radio.openWritingPipe(address[0]);
 
   // set the RX address of the TX node into a RX pipe
-  radio.openReadingPipe(0,address[1]);  // using pipe 1
+  radio.openReadingPipe(0,address[1]);
 
   // For debugging info
    printf_begin();             // needed only once for printing details
@@ -82,7 +80,7 @@ bool confirmacao(byte destino){
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
   
-  byte resposta[3];// Variável para receber a resposta ACK
+  byte resposta[5];// Variável para receber a resposta ACK
 
   bool recebido = false;// Variável indicando se recebemos a resposta ACK
   bool timeout = false;// Variável indicando se o limite de tempo de espera da resposta ACK acabou
@@ -90,7 +88,7 @@ bool confirmacao(byte destino){
 
   while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta ACK
     if(radio.available()) {// Verificamos se tem algo para ler no meio
-      radio.read(&resposta[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
+      radio.read(&resposta[0], 5);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
 
       if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == ACK) {// Se a resposta é para nós e foi enviada do destino e é um ACK
         Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
@@ -98,7 +96,7 @@ bool confirmacao(byte destino){
         recebido = true;// Colocamos que recebemos a resposta ACK
       }
     }
-    timeout = millis()-tempo > TIMEOUT;// Colocamos que o limite de tempo de espera da resposta ACK acabou
+    timeout = millis()-tempo > ACK_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta ACK acabou
     //quando o (tempo atual) - (tempo que começamos a ver se a resposta ACK chegou) for maior que o TIMEOUT(limite de tempo de espera)
   }
   return recebido;// Retornamos se recebemos resposta ACK
@@ -122,12 +120,15 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   do{
     if(!carrierSense()){
-      radio.write(&pacote[0], 5);// Colocamos o pacote que queremos enviar no buffer da antena
+      if(!radio.write(&pacote[0], 5)){// Colocamos o pacote que queremos enviar no buffer da antena
+        Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
+        continue;
+      }
       delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
       Serial.print("Tentativa de envio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
     } else {
       delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
-      tempo_de_espera *= 10;// Multiplicamos a variável 'tempo_de_espera' por 10
+      tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por um valor aleatório
       Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
 
@@ -141,21 +142,30 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
 
 // Envia um pacote de ack para o destino determinado
 void enviaACK(byte destino){
-  byte resposta_ACK[3];// Vetor de bytes representando a resposta ACK
+  byte resposta_ACK[5];// Vetor de bytes representando a resposta ACK
 
   configPayload(resposta_ACK, destino, ACK);// Configuramos os bits de controle da resposta
 
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
+  unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
 
-  if(!carrierSense()){
-    radio.write(&resposta_ACK[0], 3);// Colocamos a resposta ACK no buffer da antena
-    delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
-  } else {
-    delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
-    tempo_de_espera *= 10;// Multiplicamos a variável 'tempo_de_espera' por 10
-  }
-
-  Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
+  do{
+    if(!carrierSense()){
+      if (!radio.write(&resposta_ACK[0], 5){// Colocamos a resposta ACK no buffer da antena para tranmissão
+        Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
+        continue;
+      }
+      delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
+      Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
+      break;// Saimos do do while
+    } else {
+      Serial.println("Meio ocupado");// Imprimimos que o meio esta ocupado
+      delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
+      tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por 10
+    }
+    tentativas++;// Incrementamos o número de tentativas feitas
+  }while(tentativas < 15);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
 };
 
