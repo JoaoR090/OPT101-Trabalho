@@ -108,7 +108,6 @@ bool carrierSense(){
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(200);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
   radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-  delayMicroseconds(200);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
   return radio.testCarrier(); // Retornamos se tem alguma coisa no buffer de entrada
 }
 
@@ -151,7 +150,7 @@ void enviaACK(byte destino){
 
   do{
     if(!carrierSense()){
-      if (!radio.write(&resposta_ACK[0], 5){// Colocamos a resposta ACK no buffer da antena para tranmissão
+      if (!radio.write(&resposta_ACK[0], 5)){// Colocamos a resposta ACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
