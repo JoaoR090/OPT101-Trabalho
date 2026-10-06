@@ -21,7 +21,7 @@ O objetivo do trabalho é aprender a usar o meio sem fio, com arduínos.
 .
 ├── README.md
 └── arduino/
-    └── trabalho.ino
+    └── arduino.ino
 ```
 
 ## 👨‍🎓 Trabalho acadêmico
