@@ -107,8 +107,9 @@ bool confirmacao(byte destino){
 bool carrier_sense(){
   radio.flush_rx(); // Limpa o buffer de entrada
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
-  delayMicroseconds(200);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
+  delayMicroseconds(200);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
   radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
+  delayMicroseconds(200);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
   return radio.testCarrier(); // Retornamos se tem alguma coisa nu buffer de entrada
 }
 
