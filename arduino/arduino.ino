@@ -117,27 +117,20 @@ void envia(byte* pacote, int tamanho, byte destino, byte controle){
   // Configuramos os bits de controle do pacote
   config_payload(pacote, destino, controle);
 
-  unsigned long int tempo_de_espera = 100;
-
+  unsigned long int tempo_de_espera = 10;
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   do{
-    radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-    delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
-
-    radio.flush_rx();
-    radio.startListening();
-    delayMicroseconds(200);
-    radio.stopListening();
-
-    if(!radio.testCarrier()) {
+    if(!carrier_sense()){
       radio.write(&pacote[0], 5);// Colocamos o pacote que queremos enviar no buffer da antena
       delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
+      Serial.print("Tentativa de envio");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
     } else {
       delay(tempo_de_espera);
-      tempo_de_espera *= tempo_de_espera;
+      tempo_de_espera *= 10;
     }
 
-    Serial.println("Tentativa de envio");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
+    Serial.print("Tentativa de ver o meio");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
+    Serial.println(tentativas);// Imprimimos o numero de tentativas
 
     tentativas ++;// Incrementamos o número de tentativas feitas
   }while(!confirmacao(destino) && tentativas < 15);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
@@ -154,8 +147,15 @@ void envia_ack(byte destino){
 
   config_payload(resposta_ACK, destino, ACK);// Configuramos os bits de controle da resposta
 
-  radio.write(&resposta_ACK[0], 3);// Colocamos a resposta ACK no buffer da antena
-  delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar a resposta ACK
+  unsigned long int tempo_de_espera = 10;
+
+  if(!carrier_sense()){
+    radio.write(&resposta_ACK[0], 3);// Colocamos a resposta ACK no buffer da antena
+    delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
+  } else {
+    delay(tempo_de_espera);
+    tempo_de_espera *= 10;
+  }
 
   Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
