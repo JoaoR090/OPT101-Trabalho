@@ -7,7 +7,7 @@
 #define CSN_PIN 8
 #define DATA 0
 #define ACK 1
-#define TIMEOUT 1000000
+#define TIMEOUT 100000
 #define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
