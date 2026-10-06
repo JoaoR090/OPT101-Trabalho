@@ -123,13 +123,13 @@ void envia(byte* pacote, int tamanho, byte destino, byte controle){
     if(!carrier_sense()){
       radio.write(&pacote[0], 5);// Colocamos o pacote que queremos enviar no buffer da antena
       delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
-      Serial.print("Tentativa de envio");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
+      Serial.print("Tentativa de envio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
     } else {
       delay(tempo_de_espera);
       tempo_de_espera *= 10;
+      Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
 
-    Serial.print("Tentativa de ver o meio");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     Serial.println(tentativas);// Imprimimos o numero de tentativas
 
     tentativas ++;// Incrementamos o número de tentativas feitas
@@ -181,9 +181,9 @@ void receber(byte* pacote, int tamanho){
 }
 
 void loop() {
-  // byte payload[5]; // teste
-  // envia(&payload[0], 5, 48, DATA);
-  // delay(1000);
+  byte payload[5]; // teste
+  envia(&payload[0], 5, 37, DATA);
+  delay(1000);
   // receber(&payload[0], 5);
 
 }  // loop
