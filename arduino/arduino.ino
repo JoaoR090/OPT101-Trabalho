@@ -7,7 +7,7 @@
 #define CSN_PIN 8
 #define DATA 0
 #define ACK 1
-#define ACK_TIMEOUT_MS 1000
+#define ACK_TIMEOUT_MS 500
 #define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -120,6 +120,7 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
+      radio.flush_tx();// Limpa o buffer de saída
       if(!radio.write(&pacote[0], tamanho)){// Colocamos o pacote que queremos enviar no buffer da antena
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
@@ -149,6 +150,8 @@ void enviaACK(byte destino){
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
+      delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
+      radio.flush_tx();// Limpa o buffer de saída
       if (!radio.write(&resposta_ACK[0], 5)){// Colocamos a resposta ACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
@@ -174,6 +177,7 @@ void receber(byte* pacote, int tamanho){
   do{
     if(radio.available()) {// Verificamos se tem algo para ler no meio
       radio.read(&pacote[0], tamanho);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(pacote)
+      radio.flush_rx();// Limpa o buffer de entrada
       if((pacote[0] == MYIP) && (pacote[2] == DATA)) {// Verficamos se o pacote recebido é para nós e se é dado
         enviaACK(pacote[1]);// Enviamos o ACK
 
@@ -187,8 +191,8 @@ void receber(byte* pacote, int tamanho){
 byte payload[5] = {0, 0, 0, 0, 0};
 void loop() {
   envia(&payload[0], 5, 48, DATA);
-  delay(4000);
-  payload[3]+= 1;
+  payload[3] += 1;
+  delay(2000);
   // receber(&payload[0], 5);
 
 }  // loop
