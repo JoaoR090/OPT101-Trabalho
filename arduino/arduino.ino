@@ -92,10 +92,11 @@ bool confirmacao(byte destino){
 
       if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == ACK) {// Se a resposta é para nós e foi enviada do destino e é um ACK
         Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
+        Serial.println(" ");// Imprimimos um ' ' para pular uma linha
         recebido = true;// Colocamos que recebemos a resposta ACK
       }
     }
-    timeout = millis()-tempo >= ACK_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta ACK acabou
+    timeout = millis()-tempo > ACK_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta ACK acabou
     //quando o (tempo atual) - (tempo que começamos a ver se a resposta ACK chegou) for maior que o TIMEOUT(limite de tempo de espera)
   }
   return recebido;// Retornamos se recebemos resposta ACK
@@ -123,16 +124,18 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
         continue;
       }
       delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
+      Serial.print("Tentativa de envio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
     } else {
       delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
       tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por um valor aleatório
       Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
+
+    Serial.println(tentativas);// Imprimimos o numero de tentativas
+
     tentativas++;// Incrementamos o número de tentativas feitas
   }while(!confirmacao(destino) && tentativas < 15);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
 
-  Serial.print("Número de tentativas: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
-  Serial.println(tentativas);// Imprimimos o numero de tentativas
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
 }
 
@@ -175,7 +178,6 @@ void receber(byte* pacote, int tamanho){
 
       Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
       printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
-      Serial.println(" ");// Imprimimos um ' ' para pular uma linha
     }
   }
 }
