@@ -7,7 +7,7 @@
 #define CSN_PIN 8
 #define DATA 0
 #define ACK 1
-#define ACK_TIMEOUT_MS 2000
+#define ACK_TIMEOUT_MS 1000
 #define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -46,8 +46,6 @@ void setup() {
    printf_begin();             // needed only once for printing details
    radio.printDetails();       // (smaller) function that prints raw register values
    radio.printPrettyDetails(); // (larger) function that prints human readable data
-
-   randomSeed(analogRead(A0));
 
 }  // setup
 
@@ -94,7 +92,6 @@ bool confirmacao(byte destino){
 
       if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == ACK) {// Se a resposta é para nós e foi enviada do destino e é um ACK
         Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
-        Serial.println(" ");// Imprimimos um ' ' para pular uma linha
         recebido = true;// Colocamos que recebemos a resposta ACK
       }
     }
@@ -122,23 +119,20 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-      delayMicroseconds(300);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
-      if(!radio.write(&pacote[0], 5)){// Colocamos o pacote que queremos enviar no buffer da antena
+      delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
+      if(!radio.write(&pacote[0], tamanho)){// Colocamos o pacote que queremos enviar no buffer da antena
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
-      delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
-      Serial.print("Tentativa de envio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
     } else {
       delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
-      tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por um valor aleatório
+      tempo_de_espera *= 6;// Multiplicamos a variável 'tempo_de_espera' por um valor aleatório
       Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
-
-    Serial.println(tentativas);// Imprimimos o numero de tentativas
-
     tentativas++;// Incrementamos o número de tentativas feitas
-  }while(!confirmacao(destino) && tentativas < 15);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  }while(!confirmacao(destino) && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
+  Serial.println(tentativas);// Imprimimos o numero de tentativas
 
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
 }
@@ -159,16 +153,15 @@ void enviaACK(byte destino){
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
-      delayMicroseconds(300);// Esperamos 300 microsegundos, para a antena enviar o pacote que queremos enviar
       Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
       break;// Saimos do do while
     } else {
       Serial.println("Meio ocupado");// Imprimimos que o meio esta ocupado
       delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
-      tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por 10
+      tempo_de_espera *= 6;// Multiplicamos a variável 'tempo_de_espera' por 10
     }
     tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tentativas < 5);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  }while(tentativas < 3);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
 };
 
 // Recebe um pacote de dados de um determinado tamanho e envia um ack
@@ -176,19 +169,24 @@ void receber(byte* pacote, int tamanho){
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
 
-  if(radio.available()) {// Verificamos se tem algo para ler no meio
-    radio.read(&pacote[0], tamanho);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(pacote)
-    if((pacote[0] == MYIP) && (pacote[2] == DATA)) {// Verficamos se o pacote recebido é para nós e se é dado
-      enviaACK(pacote[1]);// Enviamos o ACK
+  unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
 
-      Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
-      printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
+  do{
+    if(radio.available()) {// Verificamos se tem algo para ler no meio
+      radio.read(&pacote[0], tamanho);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(pacote)
+      if((pacote[0] == MYIP) && (pacote[2] == DATA)) {// Verficamos se o pacote recebido é para nós e se é dado
+        enviaACK(pacote[1]);// Enviamos o ACK
+
+        Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
+        printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
+      }
     }
-  }
+    tentativas++;// Incrementamos o número de tentativas feitas
+  }while(tentativas < 3);
 }
 byte payload[5] = {0, 0, 0, 0, 0};
 void loop() {
-  envia(&payload[0], 5, 37, DATA);
+  envia(&payload[0], 5, 48, DATA);
   delay(4000);
   payload[3]+= 1;
   // receber(&payload[0], 5);
