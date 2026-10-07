@@ -7,7 +7,7 @@
 #define CSN_PIN 8
 #define DATA 0
 #define ACK 1
-#define ACK_TIMEOUT_MS 100
+#define ACK_TIMEOUT_MS 1000
 #define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -84,7 +84,7 @@ bool confirmacao(byte destino){
 
   bool recebido = false;// Variável indicando se recebemos a resposta ACK
   bool timeout = false;// Variável indicando se o limite de tempo de espera da resposta ACK acabou
-  size_t tempo = millis();// Variável que recebe o tempo que começamos a ver se a resposta ACK chegou
+  unsigned long int tempo = millis();// Variável que recebe o tempo que começamos a ver se a resposta ACK chegou
 
   while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta ACK
     if(radio.available()) {// Verificamos se tem algo para ler no meio
@@ -163,7 +163,7 @@ void enviaACK(byte destino){
       tempo_de_espera *= random(4, 10);// Multiplicamos a variável 'tempo_de_espera' por 10
     }
     tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tentativas < 15);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  }while(tentativas < 5);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
 };
@@ -185,9 +185,9 @@ void receber(byte* pacote, int tamanho){
 }
 
 void loop() {
-  // byte payload[5]; // teste
-  // envia(&payload[0], 5, 37, DATA);
-  // delay(1000);
+  byte payload[5]; // teste
+  envia(&payload[0], 5, 37, DATA);
+  delay(1000);
   // receber(&payload[0], 5);
 
 }  // loop
