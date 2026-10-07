@@ -47,6 +47,8 @@ void setup() {
    radio.printDetails();       // (smaller) function that prints raw register values
    radio.printPrettyDetails(); // (larger) function that prints human readable data
 
+   randomSeed(analogRead(A0));
+
 }  // setup
 
 void printPacote(byte *pac, int tamanho){
@@ -104,11 +106,11 @@ bool confirmacao(byte destino){
 
 // Retorna se tem alguma coisa no buffer de entrada
 bool carrierSense(){
-  radio.flush_rx(); // Limpa o buffer de entrada
+  radio.flush_rx();// Limpa o buffer de entrada
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(300);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
   radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-  return radio.testCarrier(); // Retornamos se tem alguma coisa no buffer de entrada
+  return radio.testCarrier(); // Retornamos se tem onda de rádio na antena
 }
 
 // Envia um pacote de determinado tamanho para um certo destino
@@ -119,6 +121,8 @@ void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   do{
     if(!carrierSense()){
+      radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
+      delayMicroseconds(300);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
       if(!radio.write(&pacote[0], 5)){// Colocamos o pacote que queremos enviar no buffer da antena
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
@@ -150,6 +154,7 @@ void enviaACK(byte destino){
 
   do{
     if(!carrierSense()){
+      radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       if (!radio.write(&resposta_ACK[0], 5)){// Colocamos a resposta ACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
