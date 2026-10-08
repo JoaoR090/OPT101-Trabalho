@@ -188,11 +188,13 @@ void receber(byte* pacote, int tamanho){
     tentativas++;// Incrementamos o número de tentativas feitas
   }while(tentativas < 3);
 }
-byte payload[5] = {0, 0, 0, 0, 0};
+
+byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
+
 void loop() {
-  envia(&payload[0], 5, 48, DATA);
-  payload[3] += 1;
-  delay(2000);
-  // receber(&payload[0], 5);
+  // envia(&payload[0], 5, 37, DATA);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
+  // payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
+  // delay(2000); // Esperamos 2 segundos para enviar outro pacote
+  // receber(&payload[0], 5);// Receemos
 
 }  // loop
