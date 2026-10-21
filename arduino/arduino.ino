@@ -88,7 +88,7 @@ bool confirmacao(byte destino){
 
   while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta ACK
     if(radio.available()) {// Verificamos se tem algo para ler no meio
-      radio.read(&resposta[0], 5);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
+      radio.read(&resposta[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
 
       if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == ACK) {// Se a resposta é para nós e foi enviada do destino e é um ACK
         Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
@@ -152,7 +152,7 @@ void enviaACK(byte destino){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
-      if (!radio.write(&resposta_ACK[0], 5)){// Colocamos a resposta ACK no buffer da antena para tranmissão
+      if (!radio.write(&resposta_ACK[0], 3)){// Colocamos a resposta ACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
