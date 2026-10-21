@@ -8,7 +8,7 @@
 #define DATA 0
 #define ACK 1
 #define ACK_TIMEOUT_MS 500
-#define MYIP 23
+#define MYIP 48
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
 
@@ -31,7 +31,7 @@ void setup() {
   // because these examples are likely run with nodes in close proximity to
   // each other.
   radio.setPALevel(RF24_PA_MAX);// RF24_PA_MAX is default.
-  radio.setChannel(100);
+  radio.setChannel(30);
   radio.setPayloadSize(5);
   radio.setAutoAck(false);
   radio.setCRCLength(RF24_CRC_DISABLED);
@@ -113,13 +113,14 @@ bool carrierSense(){
 // Envia um pacote de determinado tamanho para um certo destino
 void envia(byte* pacote, unsigned int tamanho, byte destino, byte controle){
   configPayload(pacote, destino, controle);// Configuramos os bits de controle do pacote
+  printPacote(pacote, tamanho);
 
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-      delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
+      delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
       if(!radio.write(&pacote[0], tamanho)){// Colocamos o pacote que queremos enviar no buffer da antena
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
@@ -192,9 +193,9 @@ void receber(byte* pacote, int tamanho){
 byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
 
 void loop() {
-  // envia(&payload[0], 5, 37, DATA);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
-  // payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
-  // delay(2000); // Esperamos 2 segundos para enviar outro pacote
+  envia(&payload[0], 5, 37, DATA);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
+  payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
+  delay(2000); // Esperamos 2 segundos para enviar outro pacote
   // receber(&payload[0], 5);// Receemos
 
 }  // loop
