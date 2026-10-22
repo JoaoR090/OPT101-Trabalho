@@ -195,7 +195,7 @@ byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
 void loop() {
   envia(&payload[0], 5, 37, DATA);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
   payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
-  delay(2000); // Esperamos 2 segundos para enviar outro pacote
+  delay(500); // Esperamos 500 milissegundos para enviar outro pacote
   // receber(&payload[0], 5);// Receemos
 
 }  // loop
