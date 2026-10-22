@@ -1,5 +1,7 @@
+// Endereço da API local iniciada pelo backend Python.
 const API_BASE = "http://127.0.0.1:8000/api";
 
+// Referências aos elementos que o JavaScript atualiza na página.
 const elements = {
   badge: document.querySelector("#connectionBadge"),
   connectionLabel: document.querySelector("#connectionLabel"),
@@ -16,10 +18,12 @@ const elements = {
   clearLog: document.querySelector("#clearLog"),
 };
 
+// Guarda o estado da tela e evita sobrepor consultas periódicas.
 let connected = false;
 let lastEventId = 0;
 let refreshInProgress = false;
 
+// Faz uma requisição à API, converte a resposta JSON e propaga erros HTTP.
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -35,11 +39,13 @@ async function request(path, options = {}) {
   return payload;
 }
 
+// Atualiza a mensagem apresentada abaixo dos controles de conexão.
 function showMessage(message, kind = "info") {
   elements.connectionMessage.textContent = message;
   elements.connectionMessage.dataset.kind = kind;
 }
 
+// Reflete na interface o estado retornado pelo backend.
 function renderStatus(status) {
   connected = status.connected;
   elements.badge.dataset.connected = String(connected);
@@ -55,6 +61,7 @@ function renderStatus(status) {
     : "—";
 }
 
+// Consulta as portas disponíveis e preserva a seleção quando possível.
 async function loadPorts() {
   try {
     const { ports } = await request("/ports");
@@ -84,6 +91,7 @@ async function loadPorts() {
   } catch (error) {
     showMessage(`Não foi possível carregar as portas: ${error.message}`, "error");
   }
+  // Atualiza também os indicadores, mesmo que a consulta de portas falhe.
   renderStatus(await request("/status").catch(() => ({
     connected: false,
     packetCount: 0,
@@ -92,6 +100,7 @@ async function loadPorts() {
   })));
 }
 
+// Cria uma entrada de log sem interpretar a mensagem como HTML.
 function renderEvent(event) {
   const entry = document.createElement("li");
   entry.className = "event-entry";
@@ -108,6 +117,7 @@ function renderEvent(event) {
 
   entry.append(time, message);
   elements.eventLog.append(entry);
+  // Limita a quantidade de linhas renderizadas para manter a tela responsiva.
   while (elements.eventLog.children.length > 250) {
     elements.eventLog.firstElementChild.remove();
   }
@@ -115,6 +125,7 @@ function renderEvent(event) {
   elements.eventLog.scrollTop = elements.eventLog.scrollHeight;
 }
 
+// Busca o estado e os eventos novos; é chamado ao carregar e a cada segundo.
 async function poll() {
   if (refreshInProgress) return;
   refreshInProgress = true;
@@ -137,6 +148,7 @@ async function poll() {
   }
 }
 
+// Solicita ao backend a abertura da porta selecionada.
 elements.connectButton.addEventListener("click", async () => {
   const port = elements.portSelect.value;
   if (!port) {
@@ -156,6 +168,7 @@ elements.connectButton.addEventListener("click", async () => {
   }
 });
 
+// Solicita o encerramento da conexão serial atual.
 elements.disconnectButton.addEventListener("click", async () => {
   elements.disconnectButton.disabled = true;
   try {
@@ -167,6 +180,7 @@ elements.disconnectButton.addEventListener("click", async () => {
   }
 });
 
+// Liga os controles de atualização, seleção e limpeza do histórico visual.
 elements.refreshPorts.addEventListener("click", loadPorts);
 elements.portSelect.addEventListener("change", () => {
   elements.connectButton.disabled = connected || !elements.portSelect.value;
@@ -176,6 +190,7 @@ elements.clearLog.addEventListener("click", () => {
   elements.emptyState.hidden = false;
 });
 
+// Inicializa a tela e mantém os dados atualizados periodicamente.
 loadPorts();
 poll();
 window.setInterval(poll, 1000);
