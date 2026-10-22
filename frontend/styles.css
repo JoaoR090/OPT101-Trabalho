@@ -1,5 +1,6 @@
 /* Tema, cores reutilizadas e tipografia padrão da aplicação. */
 :root {
+  /* Define uma paleta clara e fontes com alternativas instaladas no sistema. */
   color-scheme: light;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #14212b;
@@ -42,12 +43,14 @@ select {
 .section-heading,
 .connection-controls,
 .button-group {
+  /* Compartilha alinhamento base entre cabeçalhos e grupos de controles. */
   display: flex;
   align-items: center;
 }
 
 .page-header,
 .section-heading {
+  /* Coloca conteúdo e ações em lados opostos nos layouts mais largos. */
   justify-content: space-between;
   gap: 20px;
 }
@@ -57,6 +60,7 @@ select {
 }
 
 .eyebrow {
+  /* Identificação pequena acima do título principal. */
   margin: 0 0 8px;
   color: var(--blue);
   font-size: 0.78rem;
@@ -68,6 +72,7 @@ select {
 h1,
 h2,
 p {
+  /* Remove a margem superior padrão que varia entre navegadores. */
   margin-top: 0;
 }
 
@@ -85,6 +90,7 @@ h2 {
 .subtitle,
 .section-heading p,
 .footer-note {
+  /* Usa o mesmo tom discreto nas explicações e notas auxiliares. */
   margin-bottom: 0;
   color: var(--muted);
   font-size: 0.92rem;
@@ -106,6 +112,7 @@ h2 {
 }
 
 .status-dot {
+  /* Ponto simples que muda de cor junto com o estado da conexão. */
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -113,6 +120,7 @@ h2 {
 }
 
 .connection-badge[data-connected="true"] {
+  /* O atributo atualizado pelo JavaScript altera a aparência ao conectar. */
   color: var(--green);
 }
 
@@ -131,6 +139,7 @@ h2 {
 
 .connection-card,
 .activity-card {
+  /* Mantém distância confortável entre conteúdo e borda dos painéis. */
   padding: 22px;
 }
 
@@ -151,11 +160,13 @@ h2 {
 }
 
 .port-field {
+  /* Permite que o seletor ocupe o espaço livre no formulário. */
   flex: 1;
   min-width: 180px;
 }
 
 select {
+  /* Mantém o seletor visível e fácil de usar por mouse ou toque. */
   width: 100%;
   min-height: 42px;
   padding: 0 12px;
@@ -166,6 +177,7 @@ select {
 }
 
 .baud-field strong {
+  /* Alinha visualmente o valor da velocidade com o campo ao lado. */
   min-height: 42px;
   display: flex;
   align-items: center;
@@ -174,11 +186,13 @@ select {
 }
 
 .button-group {
+  /* Alinha os botões pela base com os outros controles. */
   align-self: end;
   gap: 9px;
 }
 
 .button {
+  /* Área clicável consistente para mouse, teclado e tela de toque. */
   min-height: 42px;
   padding: 0 15px;
   border: 1px solid transparent;
@@ -190,6 +204,7 @@ select {
 
 .button:focus-visible,
 select:focus-visible {
+  /* Mostra foco de teclado sem destacar controles usados apenas com mouse. */
   outline: 3px solid #176b8740;
   outline-offset: 2px;
 }
@@ -220,6 +235,7 @@ select:focus-visible {
 }
 
 .message {
+  /* Reserva espaço para a mensagem sem deslocar os demais elementos. */
   min-height: 1.25em;
   margin: 14px 0 0;
   color: var(--muted);
@@ -239,6 +255,7 @@ select:focus-visible {
 }
 
 .metric-card {
+  /* Centraliza cada número e seu rótulo no cartão de resumo. */
   min-height: 104px;
   display: flex;
   flex-direction: column;
@@ -248,6 +265,7 @@ select:focus-visible {
 }
 
 .metric-label {
+  /* Diferencia a descrição do valor principal de cada indicador. */
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
@@ -269,6 +287,7 @@ select:focus-visible {
 }
 
 .event-log {
+  /* Limita a altura e permite percorrer mensagens sem alongar a página. */
   display: grid;
   gap: 8px;
   max-height: 420px;
@@ -279,6 +298,7 @@ select:focus-visible {
 }
 
 .event-entry {
+  /* Organiza horário e texto em colunas, quebrando mensagens longas. */
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 10px;
@@ -293,10 +313,12 @@ select:focus-visible {
 }
 
 .event-time {
+  /* Mantém o horário secundário em relação à mensagem. */
   color: var(--muted);
 }
 
 .event-message {
+  /* Preserva quebras de linha recebidas da porta serial. */
   white-space: pre-wrap;
 }
 
@@ -316,6 +338,7 @@ select:focus-visible {
 }
 
 .empty-state {
+  /* Estado inicial apresentado quando o histórico ainda está vazio. */
   padding: 55px 10px;
   color: var(--muted);
   text-align: center;
@@ -330,6 +353,7 @@ select:focus-visible {
 
 /* Ajustes de layout para tablets e janelas estreitas. */
 @media (max-width: 760px) {
+  /* Empilha os controles quando não há largura para mantê-los em uma linha. */
   .page {
     width: min(100% - 28px, 620px);
     padding-top: 32px;
@@ -352,6 +376,7 @@ select:focus-visible {
 
 /* Ajustes adicionais para telas de celular. */
 @media (max-width: 520px) {
+  /* Reduz o conteúdo a uma coluna e adapta os logs a telas de celular. */
   .page-header,
   .section-heading {
     align-items: flex-start;
