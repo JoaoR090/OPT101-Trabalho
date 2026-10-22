@@ -10,6 +10,7 @@
   </head>
   <body>
     <main class="page">
+      <!-- Título da aplicação e indicador visual do estado da conexão. -->
       <header class="page-header">
         <div>
           <p class="eyebrow">OPT101 · Arduino</p>
@@ -22,6 +23,7 @@
         </div>
       </header>
 
+      <!-- Controles para atualizar, selecionar e abrir a porta serial. -->
       <section class="card connection-card" aria-labelledby="connectionTitle">
         <div class="section-heading">
           <div>
@@ -55,6 +57,7 @@
         <p id="connectionMessage" class="message" role="status" aria-live="polite"></p>
       </section>
 
+      <!-- Indicadores resumidos que recebem dados da API. -->
       <section class="metrics" aria-label="Resumo da comunicação">
         <article class="card metric-card">
           <span class="metric-label">Pacotes identificados</span>
@@ -70,6 +73,7 @@
         </article>
       </section>
 
+      <!-- Histórico de linhas recebidas do Arduino. -->
       <section class="card activity-card" aria-labelledby="activityTitle">
         <div class="section-heading">
           <div>
@@ -85,6 +89,7 @@
         </div>
         <ol id="eventLog" class="event-log" aria-live="polite"></ol>
       </section>
+      <!-- Lembrete da velocidade serial configurada no Arduino. -->
       <p class="footer-note">A placa deve estar configurada para 115200 baud.</p>
     </main>
   </body>

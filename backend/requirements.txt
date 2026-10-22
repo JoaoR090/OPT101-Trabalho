@@ -1,1 +1,2 @@
+# Biblioteca usada pelo backend para enumerar e acessar portas seriais.
 pyserial>=3.5,<4

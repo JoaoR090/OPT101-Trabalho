@@ -9,12 +9,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import serial
 from serial.tools import list_ports
 
-
+# Configurações comuns do servidor e da conexão com o Arduino.
 HOST = "127.0.0.1"
 PORT = 8000
 BAUD_RATE = 115200
 MAX_EVENTS = 500
 
+# Identifica as linhas de diagnóstico dos pacotes impressas pelo Arduino.
 PACKET_PATTERN = re.compile(
     r"Rcvd\s+(?P<size>\d+)\s+Destino:\s+(?P<destination>\d+)"
     r"\s+Origem:\s+(?P<source>\d+)\s+Controle:\s+(?P<control>\d+)"
@@ -23,14 +24,18 @@ PACKET_PATTERN = re.compile(
 
 
 class MonitorError(Exception):
+    """Representa erros esperados durante o gerenciamento da porta serial."""
+
     pass
 
 
 def parse_serial_line(message):
+    """Converte uma linha de pacote do Arduino para campos estruturados."""
     match = PACKET_PATTERN.search(message)
     if not match:
         return None
 
+    # Os quatro primeiros bytes de dados do pacote são exibidos separadamente.
     packet = {
         "size": int(match["size"]),
         "destination": int(match["destination"]),
@@ -45,22 +50,28 @@ def parse_serial_line(message):
 
 
 class SerialMonitor:
+    """Gerencia a porta serial e mantém um histórico limitado de eventos."""
+
     def __init__(self):
+        # O lock protege o estado compartilhado entre a API e a thread serial.
         self._lock = threading.Lock()
         self._serial = None
         self._reader_thread = None
+        # Mantém apenas os eventos mais recentes para limitar o uso de memória.
         self._events = deque(maxlen=MAX_EVENTS)
         self._next_event_id = 1
         self._packet_count = 0
         self._last_event_at = None
 
     def available_ports(self):
+        """Lista portas seriais detectadas pelo pyserial."""
         return [
             {"device": port.device, "description": port.description}
             for port in list_ports.comports()
         ]
 
     def connect(self, device):
+        """Abre a porta escolhida e inicia a thread que lê as mensagens."""
         if not isinstance(device, str) or not device.strip():
             raise ValueError("Informe uma porta serial válida.")
 
@@ -69,6 +80,8 @@ class SerialMonitor:
                 raise MonitorError("Já existe uma conexão serial ativa.")
 
         try:
+            # O timeout permite que a thread verifique periodicamente se a
+            # conexão ainda está ativa, mesmo quando a placa não envia dados.
             connection = serial.Serial(
                 port=device.strip(),
                 baudrate=BAUD_RATE,
@@ -78,6 +91,7 @@ class SerialMonitor:
             raise MonitorError(f"Não foi possível abrir {device}: {error}") from error
 
         with self._lock:
+            # Revalida dentro do lock para evitar duas conexões concorrentes.
             if self._serial is not None:
                 connection.close()
                 raise MonitorError("Já existe uma conexão serial ativa.")
@@ -89,6 +103,7 @@ class SerialMonitor:
             self._reader_thread.start()
 
     def disconnect(self):
+        """Fecha a porta atual e aguarda brevemente o fim da thread de leitura."""
         with self._lock:
             connection = self._serial
             reader_thread = self._reader_thread
@@ -103,6 +118,7 @@ class SerialMonitor:
             reader_thread.join(timeout=2)
 
     def status(self):
+        """Devolve um retrato consistente do estado atual da conexão."""
         with self._lock:
             return {
                 "connected": self._serial is not None,
@@ -113,10 +129,12 @@ class SerialMonitor:
             }
 
     def events_after(self, event_id):
+        """Retorna os eventos com identificador maior que o informado."""
         with self._lock:
             return [event for event in self._events if event["id"] > event_id]
 
     def _read_serial(self, connection):
+        """Lê linhas da porta e as registra como pacotes, logs ou erros."""
         while True:
             with self._lock:
                 if self._serial is not connection:
@@ -140,6 +158,7 @@ class SerialMonitor:
             packet = parse_serial_line(message)
             event_type = "packet" if packet is not None else "log"
             with self._lock:
+                # Ignora dados que cheguem depois de a conexão ser encerrada.
                 if self._serial is not connection:
                     return
                 if packet is not None:
@@ -147,6 +166,7 @@ class SerialMonitor:
                 self._append_event_locked(event_type, message, packet)
 
     def _append_event_locked(self, event_type, message, packet=None):
+        """Adiciona um evento; deve ser chamado enquanto o lock está adquirido."""
         timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
         event = {
             "id": self._next_event_id,
@@ -160,16 +180,21 @@ class SerialMonitor:
         self._last_event_at = timestamp
 
 
+# A instância única compartilha a conexão e o histórico entre as requisições.
 monitor = SerialMonitor()
 
 
 class RequestHandler(BaseHTTPRequestHandler):
+    """Implementa as rotas HTTP consumidas pela página web."""
+
     def do_OPTIONS(self):
+        """Permite as verificações CORS do navegador."""
         self.send_response(204)
         self._add_cors_headers()
         self.end_headers()
 
     def do_GET(self):
+        """Atende consultas de portas, estado e eventos."""
         if self.path == "/api/ports":
             self._send_json(200, {"ports": monitor.available_ports()})
         elif self.path == "/api/status":
@@ -180,6 +205,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Endpoint não encontrado."})
 
     def do_POST(self):
+        """Atende solicitações para abrir ou fechar a conexão serial."""
         try:
             body = self._read_json_body()
             if self.path == "/api/connect":
@@ -196,6 +222,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(409, {"error": str(error)})
 
     def _get_events(self):
+        """Lê o identificador de paginação e devolve os eventos seguintes."""
         from urllib.parse import parse_qs, urlparse
 
         query = parse_qs(urlparse(self.path).query)
@@ -209,6 +236,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._send_json(200, {"events": monitor.events_after(after)})
 
     def _read_json_body(self):
+        """Lê um objeto JSON pequeno e rejeita entradas inválidas."""
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if length < 0 or length > 4096:
@@ -221,6 +249,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         return body
 
     def _send_json(self, status_code, payload):
+        """Serializa a resposta JSON e inclui os cabeçalhos necessários."""
         encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status_code)
         self._add_cors_headers()
@@ -230,15 +259,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(encoded)
 
     def _add_cors_headers(self):
+        """Autoriza o frontend local a consultar a API."""
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def log_message(self, format_string, *args):
+        """Mantém no terminal os registros de acesso do servidor HTTP."""
         print(f"[HTTP] {self.address_string()} - {format_string % args}")
 
 
 def main():
+    """Inicia o servidor e libera recursos ao receber Ctrl+C."""
     server = ThreadingHTTPServer((HOST, PORT), RequestHandler)
     print(f"Backend serial disponível em http://{HOST}:{PORT}")
     try:

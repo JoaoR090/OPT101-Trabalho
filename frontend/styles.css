@@ -1,3 +1,4 @@
+/* Tema, cores reutilizadas e tipografia padrão da aplicação. */
 :root {
   color-scheme: light;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -13,20 +14,24 @@
   --red: #b43f3f;
 }
 
+/* Usa o tamanho total dos elementos ao calcular dimensões e espaçamentos. */
 * {
   box-sizing: border-box;
 }
 
+/* Define a largura mínima da tela e remove a margem padrão do navegador. */
 body {
   min-width: 320px;
   margin: 0;
 }
 
+/* Mantém os controles nativos com a mesma tipografia da interface. */
 button,
 select {
   font: inherit;
 }
 
+/* Organiza o conteúdo principal e os cabeçalhos em telas largas. */
 .page {
   width: min(100% - 40px, 1020px);
   margin: 0 auto;
@@ -85,6 +90,7 @@ h2 {
   font-size: 0.92rem;
 }
 
+/* Apresenta o estado conectado/desconectado com um indicador colorido. */
 .connection-badge {
   display: inline-flex;
   align-items: center;
@@ -115,6 +121,7 @@ h2 {
   box-shadow: 0 0 0 3px #16845b20;
 }
 
+/* Estilo comum dos painéis e espaçamento interno das seções. */
 .card {
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -127,11 +134,13 @@ h2 {
   padding: 22px;
 }
 
+/* Alinha os campos da porta, velocidade e botões de conexão. */
 .connection-controls {
   gap: 22px;
   margin-top: 24px;
 }
 
+/* Aparência dos campos e botões do formulário. */
 .port-field,
 .baud-field {
   display: grid;
@@ -190,6 +199,7 @@ select:focus-visible {
   opacity: 0.5;
 }
 
+/* Diferencia ações principais, secundárias e mensagens de erro. */
 .button-primary {
   background: var(--blue);
   color: #fff;
@@ -220,6 +230,7 @@ select:focus-visible {
   color: var(--red);
 }
 
+/* Grade e tipografia dos indicadores de estado. */
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -252,6 +263,7 @@ select:focus-visible {
   overflow-wrap: anywhere;
 }
 
+/* Lista rolável de mensagens recebidas e destaque de pacotes/erros. */
 .activity-card {
   min-height: 320px;
 }
@@ -310,11 +322,13 @@ select:focus-visible {
   font-size: 0.9rem;
 }
 
+/* Nota auxiliar exibida abaixo do histórico. */
 .footer-note {
   padding: 15px 3px 0;
   font-size: 0.8rem;
 }
 
+/* Ajustes de layout para tablets e janelas estreitas. */
 @media (max-width: 760px) {
   .page {
     width: min(100% - 28px, 620px);
@@ -336,6 +350,7 @@ select:focus-visible {
   }
 }
 
+/* Ajustes adicionais para telas de celular. */
 @media (max-width: 520px) {
   .page-header,
   .section-heading {
