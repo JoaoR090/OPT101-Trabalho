@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f6f8">
+    <title>Monitor Serial | OPT101</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">OPT101 · Arduino</p>
+          <h1>Monitor serial</h1>
+          <p class="subtitle">Acompanhe os pacotes e mensagens enviados pela placa.</p>
+        </div>
+        <div id="connectionBadge" class="connection-badge" data-connected="false">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="connectionLabel">Desconectado</span>
+        </div>
+      </header>
+
+      <section class="card connection-card" aria-labelledby="connectionTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="connectionTitle">Conexão</h2>
+            <p>Selecione a porta USB serial da placa.</p>
+          </div>
+          <button id="refreshPorts" class="button button-secondary" type="button">
+            Atualizar portas
+          </button>
+        </div>
+        <div class="connection-controls">
+          <label class="port-field" for="portSelect">
+            Porta serial
+            <select id="portSelect">
+              <option value="">Carregando portas...</option>
+            </select>
+          </label>
+          <div class="baud-field">
+            <span>Velocidade</span>
+            <strong>115200 baud</strong>
+          </div>
+          <div class="button-group">
+            <button id="connectButton" class="button button-primary" type="button">
+              Conectar
+            </button>
+            <button id="disconnectButton" class="button button-secondary" type="button" disabled>
+              Desconectar
+            </button>
+          </div>
+        </div>
+        <p id="connectionMessage" class="message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="metrics" aria-label="Resumo da comunicação">
+        <article class="card metric-card">
+          <span class="metric-label">Pacotes identificados</span>
+          <strong id="packetCount" class="metric-value">0</strong>
+        </article>
+        <article class="card metric-card">
+          <span class="metric-label">Porta conectada</span>
+          <strong id="connectedPort" class="metric-value metric-value-small">—</strong>
+        </article>
+        <article class="card metric-card">
+          <span class="metric-label">Última atividade</span>
+          <strong id="lastActivity" class="metric-value metric-value-small">—</strong>
+        </article>
+      </section>
+
+      <section class="card activity-card" aria-labelledby="activityTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="activityTitle">Atividade serial</h2>
+            <p>Mensagens recebidas da placa, mais recentes no fim.</p>
+          </div>
+          <button id="clearLog" class="button button-secondary" type="button">
+            Limpar tela
+          </button>
+        </div>
+        <div id="emptyState" class="empty-state">
+          Aguardando conexão com o Arduino.
+        </div>
+        <ol id="eventLog" class="event-log" aria-live="polite"></ol>
+      </section>
+      <p class="footer-note">A placa deve estar configurada para 115200 baud.</p>
+    </main>
+  </body>
+</html>
