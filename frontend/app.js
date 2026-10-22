@@ -25,6 +25,7 @@ let refreshInProgress = false;
 
 // Faz uma requisição à API, converte a resposta JSON e propaga erros HTTP.
 async function request(path, options = {}) {
+  // Todas as rotas usam JSON, inclusive os POSTs de conexão/desconexão.
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -32,6 +33,7 @@ async function request(path, options = {}) {
       ...options.headers,
     },
   });
+  // A API retorna os detalhes do erro no campo "error".
   const payload = await response.json();
   if (!response.ok) {
     throw new Error(payload.error || `Erro HTTP ${response.status}`);
@@ -47,6 +49,7 @@ function showMessage(message, kind = "info") {
 
 // Reflete na interface o estado retornado pelo backend.
 function renderStatus(status) {
+  // O estado também controla quais ações podem ser usadas pelo usuário.
   connected = status.connected;
   elements.badge.dataset.connected = String(connected);
   elements.connectionLabel.textContent = connected ? "Conectado" : "Desconectado";
@@ -66,6 +69,7 @@ async function loadPorts() {
   try {
     const { ports } = await request("/ports");
     const selectedPort = elements.portSelect.value;
+    // Reconstrói as opções para refletir a lista mais recente do sistema.
     elements.portSelect.replaceChildren();
 
     if (ports.length === 0) {
@@ -76,6 +80,7 @@ async function loadPorts() {
       showMessage("Conecte o Arduino e atualize a lista de portas.");
     } else {
       for (const port of ports) {
+        // Exibe o caminho usado na API e, quando disponível, a descrição do SO.
         const option = document.createElement("option");
         option.value = port.device;
         option.textContent = port.description
@@ -102,6 +107,7 @@ async function loadPorts() {
 
 // Cria uma entrada de log sem interpretar a mensagem como HTML.
 function renderEvent(event) {
+  // Cria elementos de texto separados para manter a mensagem recebida segura.
   const entry = document.createElement("li");
   entry.className = "event-entry";
   entry.dataset.type = event.type;
@@ -127,19 +133,23 @@ function renderEvent(event) {
 
 // Busca o estado e os eventos novos; é chamado ao carregar e a cada segundo.
 async function poll() {
+  // Se uma consulta ainda está pendente, evita iniciar outra em paralelo.
   if (refreshInProgress) return;
   refreshInProgress = true;
   try {
+    // Consulta em paralelo tanto os indicadores atuais quanto os novos logs.
     const [status, result] = await Promise.all([
       request("/status"),
       request(`/events?after=${lastEventId}`),
     ]);
     renderStatus(status);
+    // Avança o cursor para que a próxima consulta não repita esses eventos.
     for (const event of result.events) {
       renderEvent(event);
       lastEventId = Math.max(lastEventId, event.id);
     }
   } catch (error) {
+    // Exibe falhas de comunicação enquanto a tela considera-se desconectada.
     if (!connected) {
       showMessage(`Backend indisponível: ${error.message}`, "error");
     }
@@ -150,6 +160,7 @@ async function poll() {
 
 // Solicita ao backend a abertura da porta selecionada.
 elements.connectButton.addEventListener("click", async () => {
+  // A API não deve ser chamada sem uma porta escolhida.
   const port = elements.portSelect.value;
   if (!port) {
     showMessage("Selecione uma porta serial antes de conectar.", "error");
@@ -157,6 +168,7 @@ elements.connectButton.addEventListener("click", async () => {
   }
   elements.connectButton.disabled = true;
   try {
+    // Envia a porta selecionada; o backend aplica a velocidade serial definida.
     await request("/connect", {
       method: "POST",
       body: JSON.stringify({ port }),
@@ -172,6 +184,7 @@ elements.connectButton.addEventListener("click", async () => {
 elements.disconnectButton.addEventListener("click", async () => {
   elements.disconnectButton.disabled = true;
   try {
+    // O endpoint encerra a porta atual e retorna o novo estado.
     await request("/disconnect", { method: "POST", body: "{}" });
     showMessage("Desconectado da porta serial.");
     await poll();
@@ -183,9 +196,11 @@ elements.disconnectButton.addEventListener("click", async () => {
 // Liga os controles de atualização, seleção e limpeza do histórico visual.
 elements.refreshPorts.addEventListener("click", loadPorts);
 elements.portSelect.addEventListener("change", () => {
+  // Só habilita conectar quando existe uma porta selecionada e não conectada.
   elements.connectButton.disabled = connected || !elements.portSelect.value;
 });
 elements.clearLog.addEventListener("click", () => {
+  // Limpa apenas a lista visual; o histórico do backend continua disponível.
   elements.eventLog.replaceChildren();
   elements.emptyState.hidden = false;
 });
