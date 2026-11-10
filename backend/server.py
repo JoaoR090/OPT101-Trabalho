@@ -34,7 +34,9 @@ class MonitorError(Exception):
 
 def parse_serial_line(message):
     """Converte uma linha de pacote do Arduino para campos estruturados."""
+
     match = PACKET_PATTERN.search(message)
+
     if not match:
         # Linhas de confirmação e diagnóstico não seguem o formato de pacote.
         return None
@@ -47,10 +49,13 @@ def parse_serial_line(message):
         "control": int(match["control"]),
         "data": int(match["data"]),
     }
+
     extra = match["extra"].strip()
+
     if extra:
         # Converte os bytes restantes de texto para uma lista de inteiros.
         packet["extra"] = [int(value) for value in extra.split()]
+
     return packet
 
 
@@ -172,6 +177,7 @@ class SerialMonitor:
             message = raw_line.decode("utf-8", errors="replace").strip()
             if not message:
                 continue
+
             # Tenta reconhecer o formato de pacote; tudo o mais é log textual.
             packet = parse_serial_line(message)
             event_type = "packet" if packet is not None else "log"
@@ -205,7 +211,7 @@ monitor = SerialMonitor()
 
 class RequestHandler(BaseHTTPRequestHandler):
     """Implementa as rotas HTTP consumidas pela página web."""
-
+    
     def do_OPTIONS(self):
         """Permite as verificações CORS do navegador."""
         # O navegador envia OPTIONS antes de certas requisições cross-origin.

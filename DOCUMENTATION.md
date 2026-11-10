@@ -9,7 +9,7 @@ A aplicação tem duas partes:
   disponibiliza os dados por uma API HTTP.
 - **Frontend** (`frontend/`): uma página web simples para selecionar a porta,
   conectar ou desconectar, ver o estado da conexão e acompanhar as mensagens
-  recebidas.
+  recebidas, além de uma página local do jogo Levante a bandeira.
 
 O Arduino envia os dados por USB serial. O backend classifica como pacote as
 linhas que seguem o formato `Rcvd ... Destino: ... Origem: ... Controle: ...
@@ -81,6 +81,16 @@ python3 -m http.server 5500 --directory frontend
 No Windows, se `python3` não estiver disponível, use `python` no lugar. Abra
 `http://127.0.0.1:5500` no navegador. Com o backend em execução, atualize a
 lista de portas, selecione a porta do Arduino e pressione **Conectar**.
+
+### Jogo Levante a bandeira
+
+Na página do monitor serial, selecione **Jogar Levante a bandeira**. Escolha
+uma partida com 2 ou 4 jogadores, informe os nomes e comece. O mestre seleciona
+uma bandeira vermelha, uma branca ou ambas; cada jogador ativo reproduz o
+comando, um de cada vez, usando o mesmo dispositivo. Quem escolher uma
+combinação diferente é desclassificado. A rodada seguinte começa após todos
+responderem, e vence quem permanecer por último. **Nova partida** retorna à
+configuração sem afetar o monitor serial ou o backend.
 
 ## Uso da tela
 
