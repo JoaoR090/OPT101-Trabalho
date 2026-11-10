@@ -63,7 +63,7 @@ Abra `http://127.0.0.1:5500`, atualize a lista de portas e conecte à porta do
 Arduino. Feche o Monitor Serial da IDE do Arduino antes de conectar, pois uma
 porta serial só pode ser usada por um programa de cada vez.
 
-## 👨‍🎓 Trabalho acadêmico
+## 👨‍🎓 Trabalho acadêmicore
 
 Este projeto foi desenvolvido como atividade acadêmica para a disciplina **Tópicos Especiais em Interfaces Computacionais**.
 

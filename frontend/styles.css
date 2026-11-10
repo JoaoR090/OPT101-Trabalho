@@ -96,6 +96,20 @@ h2 {
   font-size: 0.92rem;
 }
 
+.page-switch {
+  display: inline-flex;
+  margin-top: 15px;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.page-switch:hover {
+  color: var(--blue-dark);
+}
+
 /* Apresenta o estado conectado/desconectado com um indicador colorido. */
 .connection-badge {
   display: inline-flex;
@@ -351,6 +365,205 @@ select:focus-visible {
   font-size: 0.8rem;
 }
 
+.game-card {
+  padding: 24px;
+}
+
+.game-setup {
+  display: grid;
+  gap: 20px;
+}
+
+.player-count-field,
+.player-name-field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.player-count-field {
+  max-width: 220px;
+}
+
+.player-name-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.player-name-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #14212b;
+  font: inherit;
+}
+
+.player-name-field input:focus-visible {
+  outline: 3px solid #176b8740;
+  outline-offset: 2px;
+}
+
+.game-panel[hidden],
+.game-setup[hidden],
+.master-controls[hidden],
+.response-controls[hidden] {
+  display: none;
+}
+
+.game-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.game-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.round-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.game-prompt {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  letter-spacing: -0.035em;
+}
+
+.game-instruction {
+  margin: -10px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.master-controls,
+.response-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.flag-button {
+  min-height: 106px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: #14212b;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 720;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.flag-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px #24394912;
+}
+
+.flag-button:focus-visible {
+  outline: 3px solid #176b8740;
+  outline-offset: 2px;
+}
+
+.flag-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.flag-symbol {
+  display: flex;
+  gap: 5px;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.flag-button[data-flag="red"] {
+  border-color: #efcaca;
+}
+
+.flag-button[data-flag="white"] {
+  border-color: #dce4e9;
+}
+
+.flag-button[data-flag="both"] {
+  border-color: #d8d1ec;
+}
+
+.master-controls .flag-button {
+  min-height: 90px;
+}
+
+.active-players,
+.eliminated-players {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e8edf0;
+  border-radius: 9px;
+  background: #fbfcfd;
+}
+
+.player-row[data-current="true"] {
+  border-color: #8db7c6;
+  background: #f2f9fb;
+}
+
+.player-status {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.eliminated-players {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.game-message {
+  min-height: 1.35em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.game-message[data-kind="error"] {
+  color: var(--red);
+}
+
+.game-message[data-kind="success"] {
+  color: var(--green);
+}
+
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 /* Ajustes de layout para tablets e janelas estreitas. */
 @media (max-width: 760px) {
   /* Empilha os controles quando não há largura para mantê-los em uma linha. */
@@ -363,6 +576,10 @@ select:focus-visible {
     align-items: stretch;
     flex-direction: column;
     gap: 15px;
+  }
+
+  .player-name-list {
+    grid-template-columns: 1fr;
   }
 
   .button-group {
@@ -393,8 +610,26 @@ select:focus-visible {
   }
 
   .connection-card,
-  .activity-card {
+  .activity-card,
+  .game-card {
     padding: 17px;
+  }
+
+  .master-controls,
+  .response-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .flag-button,
+  .master-controls .flag-button {
+    min-height: 72px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .game-topline {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .event-entry {
