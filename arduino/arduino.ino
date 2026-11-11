@@ -153,6 +153,7 @@ byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte contro
   }
   configPayload(pacote, destino, controle);// Configuramos os bits de controle do pacote
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
+  unsigned long int tempo_atual = millis();
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   byte chegou_ACK_CTS = 0;
   do{
@@ -179,7 +180,7 @@ byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte contro
     } else if (controle == RTS) {
       chegou_ACK_CTS = confirmacaoCTS_ACK(destino, CTS);
     }
-  }while(!chegou_ACK_CTS && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  }while(!chegou_ACK_CTS && tentativas < 10 || (controle == DATA && tempo_atual + 1000 > millis()));// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
   Serial.println(tentativas);// Imprimimos o numero de tentativas
   
@@ -226,10 +227,9 @@ void receber(byte* pacote, int tamanho){
   }while(tentativas < 3);
 
   if(!RTS_recebido)
-    Serial.println(" ");
     return;
 
-  tentativas = 0;
+  unsigned long int tempo_atual = millis();
 
   do{
     if(radio.available()) {// Verificamos se tem algo para ler no meio
@@ -244,7 +244,7 @@ void receber(byte* pacote, int tamanho){
       }
     }
     tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tentativas < 3);
+  }while(tempo_atual+1000 > millis());
 }
 
 byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
