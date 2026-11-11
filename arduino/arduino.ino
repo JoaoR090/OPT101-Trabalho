@@ -194,13 +194,11 @@ void envia(byte* pacote, unsigned int tamanho, byte destino){
     Serial.println("Não recebemos o CTS");// Imprimimos que não recebemos o CTS
     return;
   }
-  Serial.println("Recebemos o CTS");// Imprimimos que recebemos o CTS
   byte DADO_ACK = enviaDADO_RTS(pacote, tamanho, destino, DATA);
   if(!DADO_ACK){
     Serial.println("Não recebemos o ACK");// Imprimimos que não recebemos o ACK
     return;
   }
-  Serial.println("Recebemos o ACK");// Imprimimos que não recebemos o ACK
 }
 
 // Recebe um pacote de dados de um determinado tamanho e envia um ack
