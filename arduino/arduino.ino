@@ -182,7 +182,6 @@ byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte contro
   }while(!chegou_ACK_CTS && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
   Serial.println(tentativas);// Imprimimos o numero de tentativas
-  Serial.println(" ");// Imprimimos um ' ' para pular uma linha
   
   return chegou_ACK_CTS;
 }
@@ -192,13 +191,18 @@ void envia(byte* pacote, unsigned int tamanho, byte destino){
   byte RTS_CTS = enviaDADO_RTS(pacote, tamanho, destino, RTS);
   if(!RTS_CTS){
     Serial.println("Não recebemos o CTS");// Imprimimos que não recebemos o CTS
+    Serial.println(" ");
+    Serial.println(" ");
     return;
   }
   byte DADO_ACK = enviaDADO_RTS(pacote, tamanho, destino, DATA);
   if(!DADO_ACK){
     Serial.println("Não recebemos o ACK");// Imprimimos que não recebemos o ACK
+    Serial.println(" ");
+    Serial.println(" ");
     return;
   }
+  Serial.println(" ");
 }
 
 // Recebe um pacote de dados de um determinado tamanho e envia um ack
