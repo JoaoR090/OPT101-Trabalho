@@ -102,7 +102,11 @@ bool confirmacaoCTS_ACK(byte destino, byte controle){
       radio.read(&respostaCTSACK[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
 
       if(respostaCTSACK[0] == MYIP && respostaCTSACK[1] == destino && respostaCTSACK[2] == controle) {// Se a resposta é para nós e foi enviada do destino e é um CTSACK
-        Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
+        if(controle == ACK){
+          Serial.println("Confirmacao ACK recebida");// Imprimimos que a confirmação foi recebida
+        } else if (controle == CTS){
+          Serial.println("Confirmacao CTS recebida");// Imprimimos que a confirmação foi recebida
+        }
         recebido = true;// Colocamos que recebemos a resposta CTSACK
       }
     }
@@ -145,11 +149,9 @@ void enviaCTS_ACK(byte destino, byte controle){
 
 byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte controle){
   if(controle == DATA){
-    configPayload(pacote, destino, DATA);// Configuramos os bits de controle do pacote
     printPacote(pacote, tamanho);
-  } else if (controle == RTS){
-    configPayload(pacote, destino, RTS);// Configuramos os bits de controle do pacote
   }
+  configPayload(pacote, destino, controle);// Configuramos os bits de controle do pacote
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
   byte chegou_ACK_CTS = 0;
