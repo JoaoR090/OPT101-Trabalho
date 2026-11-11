@@ -148,9 +148,6 @@ void enviaCTS_ACK(byte destino, byte controle){
 }
 
 byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte controle){
-  if(controle == DATA){
-    printPacote(pacote, tamanho);
-  }
   configPayload(pacote, destino, controle);// Configuramos os bits de controle do pacote
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned long int tempo_atual = millis();
@@ -180,7 +177,7 @@ byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte contro
     } else if (controle == RTS) {
       chegou_ACK_CTS = confirmacaoCTS_ACK(destino, CTS);
     }
-  }while(!chegou_ACK_CTS && tentativas < 10 || (controle == DATA && tempo_atual + 1000 > millis()));// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+  }while(!chegou_ACK_CTS && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
   Serial.println(tentativas);// Imprimimos o numero de tentativas
   
@@ -212,7 +209,7 @@ void receber(byte* pacote, int tamanho){
   delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
   byte RTS_recebido = 0;
 
-  unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
+  unsigned long int tempo_atual = millis();
 
   do{
     if(radio.available()) {// Verificamos se tem algo para ler no meio
@@ -223,13 +220,12 @@ void receber(byte* pacote, int tamanho){
         enviaCTS_ACK(pacote[1], CTS);// Enviamos o CTS
       }
     }
-    tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tentativas < 3);
+  }while(tempo_atual+30 > millis());
 
   if(!RTS_recebido)
     return;
 
-  unsigned long int tempo_atual = millis();
+  tempo_atual = millis();
 
   do{
     if(radio.available()) {// Verificamos se tem algo para ler no meio
@@ -237,20 +233,19 @@ void receber(byte* pacote, int tamanho){
       radio.flush_rx();// Limpa o buffer de entrada
       if((pacote[0] == MYIP) && (pacote[2] == DATA)) {// Verficamos se o pacote recebido é para nós e se é dado
         enviaCTS_ACK(pacote[1], ACK);// Enviamos o ACK
-
         Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
         printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
         Serial.println(" ");
+        break;
       }
     }
-    tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tempo_atual+1000 > millis());
+  }while(tempo_atual+30 > millis());
 }
 
 byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
 
 void loop() {
-  // envia(&payload[0], 5, 37);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
+  // envia(&payload[0], 5, 23);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
   // payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
   // delay(500); // Esperamos 500 milissegundos para enviar outro pacote
   receber(&payload[0], 5);// Recebemos
