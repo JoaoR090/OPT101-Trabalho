@@ -10,7 +10,7 @@
 #define DATA 2
 #define ACK 3
 #define CTSACK_TIMEOUT_MS 20
-#define MYIP 48
+#define MYIP 23
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
 
@@ -169,7 +169,7 @@ byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte contro
     } else {
       delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
       tempo_de_espera *= 6;// Multiplicamos a variável 'tempo_de_espera' por 6
-      Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
+      Serial.println("Tentativa de ver o meio");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
     tentativas++;// Incrementamos o número de tentativas feitas
     if (controle == DATA){
@@ -216,9 +216,6 @@ void receber(byte* pacote, int tamanho){
       if((pacote[0] == MYIP) && (pacote[2] == RTS)) {// Verficamos se o pacote recebido é para nós e se é RTS
         RTS_recebido = 1;
         enviaCTS_ACK(pacote[1], CTS);// Enviamos o CTS
-
-        Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
-        printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
       }
     }
     tentativas++;// Incrementamos o número de tentativas feitas
@@ -238,6 +235,7 @@ void receber(byte* pacote, int tamanho){
 
         Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
         printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
+        Serial.println(" ");
       }
     }
     tentativas++;// Incrementamos o número de tentativas feitas
@@ -250,5 +248,5 @@ void loop() {
   // envia(&payload[0], 5, 37);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
   // payload[3] += 1; // Incrementamos o 4 byte do payload para checagem de códia do outro lado
   // delay(500); // Esperamos 500 milissegundos para enviar outro pacote
-  // receber(&payload[0], 5);// Recebemos
+  receber(&payload[0], 5);// Recebemos
 }
