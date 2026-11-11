@@ -224,6 +224,7 @@ void receber(byte* pacote, int tamanho){
   }while(tentativas < 3);
 
   if(!RTS_recebido)
+    Serial.println(" ");
     return;
 
   tentativas = 0;
