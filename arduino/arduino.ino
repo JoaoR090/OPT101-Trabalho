@@ -9,8 +9,7 @@
 #define CTS 1
 #define DATA 2
 #define ACK 3
-#define ACK_TIMEOUT_MS 50
-#define CTS_TIMEOUT_MS 20
+#define CTSACK_TIMEOUT_MS 20
 #define MYIP 48
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -78,32 +77,6 @@ void configPayload(byte* payload, byte destino, byte controle){
   payload[2] = controle;// Colocamos no byte de controle o valor que recebemos
 }
 
-// Retorna se recebemos uma resposta ACK do destino
-bool confirmacaoACK(byte destino){
-  radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
-  delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
-  
-  byte resposta[5];// Variável para receber a resposta ACK
-
-  bool recebido = false;// Variável indicando se recebemos a resposta ACK
-  bool timeout = false;// Variável indicando se o limite de tempo de espera da resposta ACK acabou
-  unsigned long int tempo = millis();// Variável que recebe o tempo que começamos a ver se a resposta ACK chegou
-
-  while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta ACK
-    if(radio.available()) {// Verificamos se tem algo para ler no meio
-      radio.read(&resposta[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
-
-      if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == ACK) {// Se a resposta é para nós e foi enviada do destino e é um ACK
-        Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
-        recebido = true;// Colocamos que recebemos a resposta ACK
-      }
-    }
-    timeout = millis()-tempo > ACK_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta ACK acabou
-    //quando o (tempo atual) - (tempo que começamos a ver se a resposta ACK chegou) for maior que o ACK_TIMEOUT_MS(limite de tempo de espera)
-  }
-  return recebido;// Retornamos se recebemos resposta ACK
-}
-
 // Retorna se tem alguma coisa no buffer de entrada
 bool carrierSense(){
   radio.flush_rx();// Limpa o buffer de entrada
@@ -113,37 +86,37 @@ bool carrierSense(){
   return radio.testCarrier(); // Retornamos se tem onda de rádio na antena
 }
 
-// Retorna se recebemos uma resposta CTS do destino
-bool confirmacaoCTS(byte destino){
+// Retorna se recebemos uma resposta CTSACK do destino
+bool confirmacaoCTSACK(byte destino, byte controle){
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
   
-  byte resposta[3];// Variável para receber a resposta CTS
+  byte respostaCTSACK[3];// Variável para receber a resposta CTSACK
 
-  bool recebido = false;// Variável indicando se recebemos a resposta CTS
-  bool timeout = false;// Variável indicando se o limite de tempo de espera da resposta CTS acabou
-  unsigned long int tempo = millis();// Variável que recebe o tempo que começamos a ver se a resposta CTS chegou
+  bool recebido = false;// Variável indicando se recebemos a resposta CTSACK
+  bool timeout = false;// Variável indicando se o limite de tempo de espera da resposta CTSACK acabou
+  unsigned long int tempo = millis();// Variável que recebe o tempo que começamos a ver se a resposta CTSACK chegou
 
-  while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta CTS
+  while(!(timeout || recebido)) {// Enquanto não acabou o limite de tempo nem foi recebido a resposta CTSACK
     if(radio.available()) {// Verificamos se tem algo para ler no meio
-      radio.read(&resposta[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
+      radio.read(&respostaCTSACK[0], 3);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(resposta)
 
-      if(resposta[0] == MYIP && resposta[1] == destino && resposta[2] == CTS) {// Se a resposta é para nós e foi enviada do destino e é um CTS
+      if(respostaCTSACK[0] == MYIP && respostaCTSACK[1] == destino && respostaCTSACK[2] == controle) {// Se a resposta é para nós e foi enviada do destino e é um CTSACK
         Serial.println("Confirmacao recebida");// Imprimimos que a confirmação foi recebida
-        recebido = true;// Colocamos que recebemos a resposta CTS
+        recebido = true;// Colocamos que recebemos a resposta CTSACK
       }
     }
-    timeout = millis()-tempo > CTS_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta CTS acabou
-    //quando o (tempo atual) - (tempo que começamos a ver se a resposta CTS chegou) for maior que o CTS_TIMEOUT_MS(limite de tempo de espera)
+    timeout = millis()-tempo > CTSACK_TIMEOUT_MS;// Colocamos que o limite de tempo de espera da resposta CTSACK acabou
+    //quando o (tempo atual) - (tempo que começamos a ver se a resposta CTSACK chegou) for maior que o CTSACK_TIMEOUT_MS(limite de tempo de espera)
   }
-  return recebido;// Retornamos se recebemos resposta CTS
+  return recebido;// Retornamos se recebemos resposta CTSACK
 }
 
 // Envia um pacote RTS e espera um CTS
 byte enviaRTS(byte destino){
-  byte pacote[3];// Variável para enviar a solitação RTS
+  byte respostaRTS[3];// Variável para enviar a solitação RTS
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  configPayload(pacote, destino, RTS);// Configuramos os bits de controle do pacote
+  configPayload(respostaRTS, destino, RTS);// Configuramos os bits de controle do pacote
   byte chegou_CTS = 0;
   do{
     delayMicroseconds(200);// Esperamos 200 microsegundos, para enviar o RTS
@@ -151,30 +124,30 @@ byte enviaRTS(byte destino){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
-      if(!radio.write(&pacote[0], 3)){// Colocamos o pacote que queremos enviar no buffer da antena
-        Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
+      if(!radio.write(&respostaRTS[0], 3)){// Colocamos o pacote que queremos enviar no buffer da antena
+        Serial.println("Falha no envio do RTS");// Imprimimos que ocorreu uma falha na transmissão
         continue;
-      }
+      respostaRTS
     }
     tentativas++;
-    chegou_CTS = confirmacaoCTS(destino);
+    chegou_CTS = confirmacaoCTSACK(destino, CTS);
   }while(!chegou_CTS && tentativas < 3);
   return chegou_CTS;
 }
 
 // Envia um pacote CTS
 void enviaCTS(byte destino){
-  byte resposta_CTS[3];// Variável para enviar a resposta CTS
+  byte respostaCTS[3];// Variável para enviar a resposta CTS
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  configPayload(resposta_CTS, destino, CTS);// Configuramos os bits de controle da resposta
+  configPayload(respostaCTS, destino, CTS);// Configuramos os bits de controle da resposta
 
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
-      if (!radio.write(&resposta_CTS[0], 3)){// Colocamos a resposta CTS no buffer da antena para tranmissão
+      if (!radio.write(&respostaCTS[0], 3)){// Colocamos a resposta CTS no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
@@ -201,7 +174,7 @@ byte enviaDADO(byte* pacote, unsigned int tamanho, byte destino){
       delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
       if(!radio.write(&pacote[0], tamanho)){// Colocamos o pacote que queremos enviar no buffer da antena
-        Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
+        Serial.println("Falha no envio dos DADOS");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
     } else {
@@ -210,7 +183,7 @@ byte enviaDADO(byte* pacote, unsigned int tamanho, byte destino){
       Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
     tentativas++;// Incrementamos o número de tentativas feitas
-    chegou_ACK = confirmacaoACK(destino);
+    chegou_ACK = confirmacaoCTSACK(destino, ACK);
   }while(!chegou_ACK && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
   Serial.println(tentativas);// Imprimimos o numero de tentativas
@@ -221,9 +194,9 @@ byte enviaDADO(byte* pacote, unsigned int tamanho, byte destino){
 
 // Envia um pacote de ack para o destino determinado
 void enviaACK(byte destino){
-  byte resposta_ACK[3];// Vetor de bytes representando a resposta ACK
+  byte respostaACK[3];// Vetor de bytes representando a resposta ACK
   
-  configPayload(resposta_ACK, destino, ACK);// Configuramos os bits de controle da resposta
+  configPayload(respostaACK, destino, ACK);// Configuramos os bits de controle da resposta
 
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
@@ -233,7 +206,7 @@ void enviaACK(byte destino){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
-      if (!radio.write(&resposta_ACK[0], 3)){// Colocamos a resposta ACK no buffer da antena para tranmissão
+      if (!radio.write(&respostaACK[0], 3)){// Colocamos a resposta ACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
