@@ -127,7 +127,7 @@ byte enviaRTS(byte destino){
       if(!radio.write(&respostaRTS[0], 3)){// Colocamos o pacote que queremos enviar no buffer da antena
         Serial.println("Falha no envio do RTS");// Imprimimos que ocorreu uma falha na transmissão
         continue;
-      respostaRTS
+      }
     }
     tentativas++;
     chegou_CTS = confirmacaoCTSACK(destino, CTS);
