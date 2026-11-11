@@ -87,7 +87,7 @@ bool carrierSense(){
 }
 
 // Retorna se recebemos uma resposta CTSACK do destino
-bool confirmacaoCTSACK(byte destino, byte controle){
+bool confirmacaoCTS_ACK(byte destino, byte controle){
   radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
   delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
   
@@ -112,46 +112,27 @@ bool confirmacaoCTSACK(byte destino, byte controle){
   return recebido;// Retornamos se recebemos resposta CTSACK
 }
 
-// Envia um pacote RTS e espera um CTS
-byte enviaRTS(byte destino){
-  byte respostaRTS[3];// Variável para enviar a solitação RTS
-  unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  configPayload(respostaRTS, destino, RTS);// Configuramos os bits de controle do pacote
-  byte chegou_CTS = 0;
-  do{
-    delayMicroseconds(200);// Esperamos 200 microsegundos, para enviar o RTS
-    if(!carrierSense()){
-      radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-      delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
-      radio.flush_tx();// Limpa o buffer de saída
-      if(!radio.write(&respostaRTS[0], 3)){// Colocamos o pacote que queremos enviar no buffer da antena
-        Serial.println("Falha no envio do RTS");// Imprimimos que ocorreu uma falha na transmissão
-        continue;
-      }
-    }
-    tentativas++;
-    chegou_CTS = confirmacaoCTSACK(destino, CTS);
-  }while(!chegou_CTS && tentativas < 3);
-  return chegou_CTS;
-}
-
-// Envia um pacote CTS
-void enviaCTS(byte destino){
-  byte respostaCTS[3];// Variável para enviar a resposta CTS
+// Envia um pacote CTSACK
+void enviaCTS_ACK(byte destino, byte controle){
+  byte respostaCTSACK[3];// Variável para enviar a resposta CTSACK
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  configPayload(respostaCTS, destino, CTS);// Configuramos os bits de controle da resposta
-
+  configPayload(respostaCTSACK, destino, controle);// Configuramos os bits de controle da resposta
+  
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
-      if (!radio.write(&respostaCTS[0], 3)){// Colocamos a resposta CTS no buffer da antena para tranmissão
+      if (!radio.write(&respostaCTSACK[0], 3)){// Colocamos a resposta CTSACK no buffer da antena para tranmissão
         Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
         continue;
       }
-      Serial.println("CTS enviado");// Imprimimos que o CTS foi enviado
+      if (controle == CTS){
+        Serial.println("CTS enviado");// Imprimimos que o CTSACK foi enviado
+      } else if (controle == ACK){
+        Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
+      }
       break;// Saimos do do while
     } else {
       Serial.println("Meio ocupado");// Imprimimos que o meio esta ocupado
@@ -162,19 +143,27 @@ void enviaCTS(byte destino){
   }while(tentativas < 3);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
 }
 
-byte enviaDADO(byte* pacote, unsigned int tamanho, byte destino){
-  configPayload(pacote, destino, DATA);// Configuramos os bits de controle do pacote
-  printPacote(pacote, tamanho);
+byte enviaDADO_RTS(byte* pacote, unsigned int tamanho, byte destino, byte controle){
+  if(controle == DATA){
+    configPayload(pacote, destino, DATA);// Configuramos os bits de controle do pacote
+    printPacote(pacote, tamanho);
+  } else if (controle == RTS){
+    configPayload(pacote, destino, RTS);// Configuramos os bits de controle do pacote
+  }
   unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
   unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  byte chegou_ACK = 0;
+  byte chegou_ACK_CTS = 0;
   do{
     if(!carrierSense()){
       radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
       delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
       radio.flush_tx();// Limpa o buffer de saída
       if(!radio.write(&pacote[0], tamanho)){// Colocamos o pacote que queremos enviar no buffer da antena
-        Serial.println("Falha no envio dos DADOS");// Imprimimos que ocorreu uma falha na transmissão
+        if(controle == DATA){
+          Serial.println("Falha no envio dos DADOS");// Imprimimos que ocorreu uma falha na transmissão
+        } else if (controle == RTS){
+          Serial.println("Falha no envio do RTS");// Imprimimos que ocorreu uma falha na transmissão
+        }
         continue;
       }
     } else {
@@ -183,53 +172,28 @@ byte enviaDADO(byte* pacote, unsigned int tamanho, byte destino){
       Serial.print("Tentativa de ver o meio ");// Imprimimos para dizer que esta sendo realizada uma tentativa de ver o meio
     }
     tentativas++;// Incrementamos o número de tentativas feitas
-    chegou_ACK = confirmacaoCTSACK(destino, ACK);
-  }while(!chegou_ACK && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
+    if (controle == DATA){
+      chegou_ACK_CTS = confirmacaoCTS_ACK(destino, ACK);
+    } else if (controle == RTS) {
+      chegou_ACK_CTS = confirmacaoCTS_ACK(destino, CTS);
+    }
+  }while(!chegou_ACK_CTS && tentativas < 10);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
   Serial.print("Número de tentativas de envio: ");// Imprimimos para dizer que esta sendo realizada uma tentativa de envio
   Serial.println(tentativas);// Imprimimos o numero de tentativas
   Serial.println(" ");// Imprimimos um ' ' para pular uma linha
-
-  return chegou_ACK;
+  
+  return chegou_ACK_CTS;
 }
-
-// Envia um pacote de ack para o destino determinado
-void enviaACK(byte destino){
-  byte respostaACK[3];// Vetor de bytes representando a resposta ACK
-  
-  configPayload(respostaACK, destino, ACK);// Configuramos os bits de controle da resposta
-
-  unsigned long int tempo_de_espera = 10;// Tempo base que se espera se tem alguém transmitindo
-  unsigned int tentativas = 0;// Variável de controle para saber quantas tentativas foram feitas
-  
-  do{
-    if(!carrierSense()){
-      radio.stopListening();// Enviamos um sinal para a antena parar de ouvir o meio
-      delayMicroseconds(100);// Esperamos 200 microsegundos, para a antena fazer a ação pedida
-      radio.flush_tx();// Limpa o buffer de saída
-      if (!radio.write(&respostaACK[0], 3)){// Colocamos a resposta ACK no buffer da antena para tranmissão
-        Serial.println("Falha no envio");// Imprimimos que ocorreu uma falha na transmissão
-        continue;
-      }
-      Serial.println("ACK enviado");// Imprimimos que o ACK foi enviado
-      break;// Saimos do do while
-    } else {
-      Serial.println("Meio ocupado");// Imprimimos que o meio esta ocupado
-      delay(tempo_de_espera);// Esperamos o tempo definido na variável 'tempo_de_espera'
-      tempo_de_espera *= 6;// Multiplicamos a variável 'tempo_de_espera' por 10
-    }
-    tentativas++;// Incrementamos o número de tentativas feitas
-  }while(tentativas < 3);// Enquanto não foi confirmado o pacote e não estorou o limite de tentivas, continuamos tentando enviar o pacote
-};
 
 // Envia um pacote de determinado tamanho para um certo destino
 void envia(byte* pacote, unsigned int tamanho, byte destino){
-  byte RTS_CTS = enviaRTS(destino);
+  byte RTS_CTS = enviaDADO_RTS(pacote, tamanho, destino, RTS);
   if(!RTS_CTS){
     Serial.println("Não recebemos o CTS");// Imprimimos que não recebemos o CTS
     return;
   }
   Serial.println("Recebemos o CTS");// Imprimimos que recebemos o CTS
-  byte DADO_ACK = enviaDADO(pacote, tamanho, destino);
+  byte DADO_ACK = enviaDADO_RTS(pacote, tamanho, destino, DATA);
   if(!DADO_ACK){
     Serial.println("Não recebemos o ACK");// Imprimimos que não recebemos o ACK
     return;
@@ -251,7 +215,7 @@ void receber(byte* pacote, int tamanho){
       radio.flush_rx();// Limpa o buffer de entrada
       if((pacote[0] == MYIP) && (pacote[2] == RTS)) {// Verficamos se o pacote recebido é para nós e se é RTS
         RTS_recebido = 1;
-        enviaCTS(pacote[1]);// Enviamos o CTS
+        enviaCTS_ACK(pacote[1], CTS);// Enviamos o CTS
 
         Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
         printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
@@ -270,7 +234,7 @@ void receber(byte* pacote, int tamanho){
       radio.read(&pacote[0], tamanho);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(pacote)
       radio.flush_rx();// Limpa o buffer de entrada
       if((pacote[0] == MYIP) && (pacote[2] == DATA)) {// Verficamos se o pacote recebido é para nós e se é dado
-        enviaACK(pacote[1]);// Enviamos o ACK
+        enviaCTS_ACK(pacote[1], ACK);// Enviamos o ACK
 
         Serial.println("Pacote Recebido:");// Imprimimos na tela que o pacote foi recebido
         printPacote(&pacote[0], tamanho);// Imprimimos na tela o pacote recebido
