@@ -224,8 +224,10 @@ void receber(byte* pacote, int tamanho){
 
   if(!RTS_recebido)
     return;
-
   tempo_atual = millis();
+
+  radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
+  delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
 
   do{
     if(radio.available()) {// Verificamos se tem algo para ler no meio
