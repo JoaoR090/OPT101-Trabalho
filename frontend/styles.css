@@ -1,0 +1,639 @@
+/* Tema, cores reutilizadas e tipografia padrão da aplicação. */
+:root {
+  /* Define uma paleta clara e fontes com alternativas instaladas no sistema. */
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #14212b;
+  background: #f3f6f8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --muted: #61717d;
+  --border: #dce4e9;
+  --blue: #176b87;
+  --blue-dark: #10556d;
+  --green: #16845b;
+  --red: #b43f3f;
+}
+
+/* Usa o tamanho total dos elementos ao calcular dimensões e espaçamentos. */
+* {
+  box-sizing: border-box;
+}
+
+/* Define a largura mínima da tela e remove a margem padrão do navegador. */
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+/* Mantém os controles nativos com a mesma tipografia da interface. */
+button,
+select {
+  font: inherit;
+}
+
+/* Organiza o conteúdo principal e os cabeçalhos em telas largas. */
+.page {
+  width: min(100% - 40px, 1020px);
+  margin: 0 auto;
+  padding: 54px 0 36px;
+}
+
+.page-header,
+.section-heading,
+.connection-controls,
+.button-group {
+  /* Compartilha alinhamento base entre cabeçalhos e grupos de controles. */
+  display: flex;
+  align-items: center;
+}
+
+.page-header,
+.section-heading {
+  /* Coloca conteúdo e ações em lados opostos nos layouts mais largos. */
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.page-header {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  /* Identificação pequena acima do título principal. */
+  margin: 0 0 8px;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  /* Remove a margem superior padrão que varia entre navegadores. */
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 8px;
+  font-size: clamp(2rem, 5vw, 2.7rem);
+  letter-spacing: -0.045em;
+}
+
+h2 {
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.subtitle,
+.section-heading p,
+.footer-note {
+  /* Usa o mesmo tom discreto nas explicações e notas auxiliares. */
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.page-switch {
+  display: inline-flex;
+  margin-top: 15px;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.page-switch:hover {
+  color: var(--blue-dark);
+}
+
+/* Apresenta o estado conectado/desconectado com um indicador colorido. */
+.connection-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.status-dot {
+  /* Ponto simples que muda de cor junto com o estado da conexão. */
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8997a1;
+}
+
+.connection-badge[data-connected="true"] {
+  /* O atributo atualizado pelo JavaScript altera a aparência ao conectar. */
+  color: var(--green);
+}
+
+.connection-badge[data-connected="true"] .status-dot {
+  background: var(--green);
+  box-shadow: 0 0 0 3px #16845b20;
+}
+
+/* Estilo comum dos painéis e espaçamento interno das seções. */
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 18px #24394908;
+}
+
+.connection-card,
+.activity-card {
+  /* Mantém distância confortável entre conteúdo e borda dos painéis. */
+  padding: 22px;
+}
+
+/* Alinha os campos da porta, velocidade e botões de conexão. */
+.connection-controls {
+  gap: 22px;
+  margin-top: 24px;
+}
+
+/* Aparência dos campos e botões do formulário. */
+.port-field,
+.baud-field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.port-field {
+  /* Permite que o seletor ocupe o espaço livre no formulário. */
+  flex: 1;
+  min-width: 180px;
+}
+
+select {
+  /* Mantém o seletor visível e fácil de usar por mouse ou toque. */
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: #14212b;
+}
+
+.baud-field strong {
+  /* Alinha visualmente o valor da velocidade com o campo ao lado. */
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  color: #14212b;
+  font-size: 0.95rem;
+}
+
+.button-group {
+  /* Alinha os botões pela base com os outros controles. */
+  align-self: end;
+  gap: 9px;
+}
+
+.button {
+  /* Área clicável consistente para mouse, teclado e tela de toque. */
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 680;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.button:focus-visible,
+select:focus-visible {
+  /* Mostra foco de teclado sem destacar controles usados apenas com mouse. */
+  outline: 3px solid #176b8740;
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Diferencia ações principais, secundárias e mensagens de erro. */
+.button-primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--blue-dark);
+}
+
+.button-secondary {
+  border-color: var(--border);
+  background: #fff;
+  color: #344652;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: #f5f8fa;
+}
+
+.message {
+  /* Reserva espaço para a mensagem sem deslocar os demais elementos. */
+  min-height: 1.25em;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+
+.message[data-kind="error"] {
+  color: var(--red);
+}
+
+/* Grade e tipografia dos indicadores de estado. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.metric-card {
+  /* Centraliza cada número e seu rótulo no cartão de resumo. */
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 20px;
+}
+
+.metric-label {
+  /* Diferencia a descrição do valor principal de cada indicador. */
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.7rem;
+  letter-spacing: -0.04em;
+}
+
+.metric-value-small {
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+/* Lista rolável de mensagens recebidas e destaque de pacotes/erros. */
+.activity-card {
+  min-height: 320px;
+}
+
+.event-log {
+  /* Limita a altura e permite percorrer mensagens sem alongar a página. */
+  display: grid;
+  gap: 8px;
+  max-height: 420px;
+  margin: 18px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.event-entry {
+  /* Organiza horário e texto em colunas, quebrando mensagens longas. */
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #e8edf0;
+  border-radius: 8px;
+  background: #fbfcfd;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.event-time {
+  /* Mantém o horário secundário em relação à mensagem. */
+  color: var(--muted);
+}
+
+.event-message {
+  /* Preserva quebras de linha recebidas da porta serial. */
+  white-space: pre-wrap;
+}
+
+.event-entry[data-type="packet"] {
+  border-left: 3px solid var(--blue);
+}
+
+.event-entry[data-type="error"] {
+  border-left: 3px solid var(--red);
+  color: var(--red);
+}
+
+.event-entry[data-type="packet"] .event-message::before {
+  content: "PACOTE  ";
+  color: var(--blue);
+  font-weight: 750;
+}
+
+.empty-state {
+  /* Estado inicial apresentado quando o histórico ainda está vazio. */
+  padding: 55px 10px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Nota auxiliar exibida abaixo do histórico. */
+.footer-note {
+  padding: 15px 3px 0;
+  font-size: 0.8rem;
+}
+
+.game-card {
+  padding: 24px;
+}
+
+.game-setup {
+  display: grid;
+  gap: 20px;
+}
+
+.player-count-field,
+.player-name-field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.player-count-field {
+  max-width: 220px;
+}
+
+.player-name-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.player-name-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #14212b;
+  font: inherit;
+}
+
+.player-name-field input:focus-visible {
+  outline: 3px solid #176b8740;
+  outline-offset: 2px;
+}
+
+.game-panel[hidden],
+.game-setup[hidden],
+.master-controls[hidden],
+.response-controls[hidden] {
+  display: none;
+}
+
+.game-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.game-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.round-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.game-prompt {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  letter-spacing: -0.035em;
+}
+
+.game-instruction {
+  margin: -10px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.master-controls,
+.response-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.flag-button {
+  min-height: 106px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: #14212b;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 720;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.flag-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px #24394912;
+}
+
+.flag-button:focus-visible {
+  outline: 3px solid #176b8740;
+  outline-offset: 2px;
+}
+
+.flag-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.flag-symbol {
+  display: flex;
+  gap: 5px;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.flag-button[data-flag="red"] {
+  border-color: #efcaca;
+}
+
+.flag-button[data-flag="white"] {
+  border-color: #dce4e9;
+}
+
+.flag-button[data-flag="both"] {
+  border-color: #d8d1ec;
+}
+
+.master-controls .flag-button {
+  min-height: 90px;
+}
+
+.active-players,
+.eliminated-players {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e8edf0;
+  border-radius: 9px;
+  background: #fbfcfd;
+}
+
+.player-row[data-current="true"] {
+  border-color: #8db7c6;
+  background: #f2f9fb;
+}
+
+.player-status {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.eliminated-players {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.game-message {
+  min-height: 1.35em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.game-message[data-kind="error"] {
+  color: var(--red);
+}
+
+.game-message[data-kind="success"] {
+  color: var(--green);
+}
+
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Ajustes de layout para tablets e janelas estreitas. */
+@media (max-width: 760px) {
+  /* Empilha os controles quando não há largura para mantê-los em uma linha. */
+  .page {
+    width: min(100% - 28px, 620px);
+    padding-top: 32px;
+  }
+
+  .connection-controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .player-name-list {
+    grid-template-columns: 1fr;
+  }
+
+  .button-group {
+    align-self: stretch;
+  }
+
+  .button-group .button {
+    flex: 1;
+  }
+}
+
+/* Ajustes adicionais para telas de celular. */
+@media (max-width: 520px) {
+  /* Reduz o conteúdo a uma coluna e adapta os logs a telas de celular. */
+  .page-header,
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-height: 86px;
+  }
+
+  .connection-card,
+  .activity-card,
+  .game-card {
+    padding: 17px;
+  }
+
+  .master-controls,
+  .response-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .flag-button,
+  .master-controls .flag-button {
+    min-height: 72px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .game-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .event-entry {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f6f8">
+    <title>Levante a bandeira | OPT101</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="game.js" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">OPT101 · Jogo em grupo</p>
+          <h1>Levante a bandeira</h1>
+          <p class="subtitle">Siga os comandos do mestre. Errou, está fora — vence quem resistir por último.</p>
+          <a class="page-switch" href="index.html">Voltar ao monitor serial</a>
+        </div>
+      </header>
+
+      <section class="card game-card" aria-labelledby="gameTitle">
+        <div class="game-setup" id="gameSetup">
+          <div>
+            <h2 id="gameTitle">Prepare a partida</h2>
+            <p class="subtitle">Escolha 2 ou 4 jogadores e informe os nomes. Uma pessoa será o mestre.</p>
+          </div>
+          <label class="player-count-field" for="playerCount">
+            Número de jogadores
+            <select id="playerCount">
+              <option value="2">2 jogadores</option>
+              <option value="4">4 jogadores</option>
+            </select>
+          </label>
+          <div id="playerNames" class="player-name-list"></div>
+          <p id="setupMessage" class="game-message" role="status" aria-live="polite"></p>
+          <div>
+            <button id="startGame" class="button button-primary" type="button">Começar partida</button>
+          </div>
+        </div>
+
+        <div id="gamePanel" class="game-panel" hidden>
+          <div class="game-topline">
+            <p id="roundLabel" class="round-label"></p>
+            <span id="playersRemaining" class="connection-badge"></span>
+          </div>
+          <h2 id="gamePrompt" class="game-prompt"></h2>
+          <p id="gameInstruction" class="game-instruction"></p>
+
+          <div id="masterControls" class="master-controls" aria-label="Comandos do mestre">
+            <button class="flag-button" data-flag="red" type="button">
+              <span class="flag-symbol" aria-hidden="true">🟥</span>
+              <span>Bandeira vermelha</span>
+            </button>
+            <button class="flag-button" data-flag="white" type="button">
+              <span class="flag-symbol" aria-hidden="true">⬜</span>
+              <span>Bandeira branca</span>
+            </button>
+            <button class="flag-button" data-flag="both" type="button">
+              <span class="flag-symbol" aria-hidden="true">🟥 ⬜</span>
+              <span>As duas bandeiras</span>
+            </button>
+          </div>
+
+          <div id="responseControls" class="response-controls" aria-label="Resposta do jogador" hidden>
+            <button class="flag-button" data-response="red" type="button">
+              <span class="flag-symbol" aria-hidden="true">🟥</span>
+              <span>Levantar vermelha</span>
+            </button>
+            <button class="flag-button" data-response="white" type="button">
+              <span class="flag-symbol" aria-hidden="true">⬜</span>
+              <span>Levantar branca</span>
+            </button>
+            <button class="flag-button" data-response="both" type="button">
+              <span class="flag-symbol" aria-hidden="true">🟥 ⬜</span>
+              <span>Levantar as duas</span>
+            </button>
+          </div>
+
+          <ul id="activePlayers" class="active-players" aria-label="Jogadores na partida"></ul>
+          <div id="eliminatedSection" hidden>
+            <h3>Desclassificados</h3>
+            <ul id="eliminatedPlayers" class="eliminated-players"></ul>
+          </div>
+          <p id="gameMessage" class="game-message" role="status" aria-live="polite"></p>
+          <div class="game-actions">
+            <button id="nextRound" class="button button-primary" type="button" hidden>Próxima rodada</button>
+            <button id="newGame" class="button button-secondary" type="button">Nova partida</button>
+          </div>
+        </div>
+      </section>
+      <p class="footer-note">Jogo local para até quatro pessoas: passem o dispositivo entre os jogadores para registrar cada resposta.</p>
+    </main>
+  </body>
+</html>
