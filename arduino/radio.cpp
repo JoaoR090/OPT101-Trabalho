@@ -221,6 +221,9 @@ void receber(byte* pacote, int tamanho){
 
 	tempo_atual = millis();
 
+	radio.startListening();// Enviamos um sinal para a antena começar a ouvir o meio
+	delayMicroseconds(100);// Esperamos 100 microsegundos, para a antena fazer a ação pedida
+
 	do{
 		if(radio.available()) {// Verificamos se tem algo para ler no meio
 			radio.read(&pacote[0], tamanho);// Lemos um determinado tamanho de bytes da rede para um vetor de bytes(pacote)
