@@ -18,9 +18,9 @@ void setup() {
 byte payload[5] = {0, 0, 0, 0, 0};// Vetor de 5 bytes denominado payload
 
 void envia_distancia(){
-  float distancia_objeto = distancia_objeto()
-  payload[3] = MYID
-  payload[4] = (byte)distancia_objeto
+  float distancia_objeto_bandeira = distancia_objeto();
+  payload[3] = MYID;
+  payload[4] = (byte)distancia_objeto_bandeira;
   envia(&payload[0], 5, 23);// Enviamos o payload com tamanho 5 para o endereço 37 com dados
 }
 

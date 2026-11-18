@@ -21,7 +21,7 @@ float distancia_objeto() {
   // Lê o tempo de retorno do pulso no Echo
   long duracao = pulseIn(PINO_ECHO, HIGH);
 
-  // Converte o tempo em distância (cm) * 10
+  // Converte o tempo em distância (cm) / 10
   float distancia = duracao * 0.034 / 2 / 10;
 
   return distancia;
